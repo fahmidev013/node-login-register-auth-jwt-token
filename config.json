@@ -1,0 +1,9 @@
+{
+    "connectionString": "mongodb://localhost:27017/ng_backend",
+    "apiUrl": "http://localhost:4000",
+    "secret": "12345",
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "database": "ng_backend"
+}
