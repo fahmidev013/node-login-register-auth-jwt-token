@@ -4,15 +4,8 @@ var cors = require('cors');
 const bodyParser = require('body-parser');
 var expressJwt = require('express-jwt');
 var config = require('config.json');
-//const mysql = require('mysql');
-var app = express();
 
-/* var mysqlConnectionRoot = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "ng_backend"
-}); */
+var app = express();
 
 app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -48,12 +41,6 @@ app.use(function (err, req, res, next) {
     }
 });
 
-
-
-/* mysqlConnectionRoot.connect(err => {
-    if (!err) console.log("DB Connection Succesd");
-    else console.log("DB Connect failed" + JSON.stringify(err, undefined, 2));
-}); */
 
 app.listen(3000, console.log("Server API Started at port 3000"));
 

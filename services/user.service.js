@@ -3,11 +3,11 @@ var _ = require('lodash');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 var Q = require('q');
-var mongo = require('mongoskin');
+// var mongo = require('mongoskin');
 const mysql = require('mysql');
-var db = mongo.db(config.connectionString, {
+/* var db = mongo.db(config.connectionString, {
     native_parser: true
-});
+}); */
 
 
 var mysqlConnection = mysql.createConnection({
@@ -113,21 +113,21 @@ function authenticate(username, password) {
     var deferred = Q.defer();
 
     mysqlConnection.query(
-        "SELECT users.username FROM users WHERE users.username LIKE '%" +
+        "SELECT * FROM users WHERE users.username LIKE '%" +
         username +
         "%'",
         (err, user, fields) => {
             if (!err) {
 
-                if (user && bcrypt.compareSync(password, user.hash)) {
+                if (user[0] && bcrypt.compareSync(password, user[0].hash)) {
                     // authentication successful
                     deferred.resolve({
                         _id: user._id,
-                        username: user.username,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
+                        username: user[0].username,
+                        firstName: user[0].firstName,
+                        lastName: user[0].lastName,
                         token: jwt.sign({
-                            sub: user._id
+                            sub: user[0]._id
                         }, config.secret)
                     });
                 } else {
@@ -173,7 +173,7 @@ function authenticate(username, password) {
 function getAll() {
     var deferred = Q.defer();
 
-    mysqlConnection.query("SELECT * FROM users",
+    mysqlConnection.query("SELECT users._id AS 'id', users.username, users.firstName, users.lastName FROM users",
         (err, users, fields) => {
             if (!err) {
                 users = _.map(users, function (user) {
@@ -207,12 +207,16 @@ function getById(_id) {
     var deferred = Q.defer();
 
     mysqlConnection.query(
-        "SELECT * FROM users WHERE users._id = ?",
+        "SELECT users._id AS 'id', users.username, users.firstName, users.lastName FROM users WHERE users._id = ?",
         [_id],
         (err, row, fields) => {
             if (!err) {
-                deferred.resolve(_.omit(row, 'hash'));
-                //res.send(row);
+                row = _.map(row, function (user) {
+                    return _.omit(user, 'hash');
+                });
+                deferred.resolve(row);
+                //deferred.resolve(_.omit(row, 'hash'));
+
             } else {
                 deferred.reject(err.name + ': ' + err.message);
                 console.log(err);
@@ -445,7 +449,6 @@ function _delete(_id) {
         (err, row, fields) => {
             if (!err) {
                 deferred.resolve();
-                res.send("Delete Sukses!");
             } else {
                 deferred.reject(err.name + ': ' + err.message);
                 console.log(err + JSON.stringify(req.params.id));
