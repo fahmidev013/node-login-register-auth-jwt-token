@@ -3,18 +3,14 @@ var _ = require('lodash');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 var Q = require('q');
-// var mongo = require('mongoskin');
 const mysql = require('mysql');
-/* var db = mongo.db(config.connectionString, {
-    native_parser: true
-}); */
 
 
 var mysqlConnection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "ng_backend"
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
 });
 
 
@@ -23,8 +19,6 @@ mysqlConnection.connect(err => {
     else console.log("DB Connect failed" + JSON.stringify(err, undefined, 2));
 });
 
-
-//db.bind('users');
 
 var service = {};
 
@@ -36,78 +30,6 @@ service.update = update;
 service.delete = _delete;
 
 module.exports = service;
-
-/* 
-app.get("/employee", (req, res) => {
-    mysqlConnection.query("SELECT * FROM employee", (err, row, fields) => {
-        if (!err) res.send(row);
-        else console.log(err);
-    });
-});
-
-app.get("/employee/:id", (req, res) => {
-    mysqlConnection.query(
-        "SELECT * FROM employee WHERE employee.EmpID = ?",
-        [req.params.id],
-        (err, row, fields) => {
-            if (!err) res.send(row);
-            else console.log(err);
-        }
-    );
-});
-
-app.get("/employee/salary/:nama", (req, res) => {
-    mysqlConnection.query(
-        "SELECT employee.Name AS 'Nama Karyawan', employee.EmpCode AS 'Jabatan', employee.Salary AS 'GAJI' FROM employee WHERE employee.Name LIKE '%" +
-        req.params.nama +
-        "%'",
-        (err, row, fields) => {
-            if (!err) res.send(row);
-            else console.log(err);
-        }
-    );
-});
-
-app.delete("/employee/:id", (req, res) => {
-    mysqlConnection.query(
-        "DELETE FROM employee WHERE EmpID = ?",
-        [req.params.id],
-        (err, row, fields) => {
-            if (!err) res.send("Delete Sukses!");
-            else console.log(err + JSON.stringify(req.params.id));
-        }
-    );
-});
-
-app.post("/employee", (req, res) => {
-    var emp = req.body;
-    mysqlConnection.query(
-        "INSERT INTO employee SET ?",
-        [emp],
-        (err, row, fields) => {
-            if (!err)
-                res.send(
-                    "Insert Sukses! \n { Request : " + JSON.stringify(req.body) + "\n}"
-                );
-            else console.log(err + "  " + JSON.stringify(req.body));
-        }
-    );
-});
-
-app.put("/employee/:id", (req, res) => {
-    var emp = req.body;
-    mysqlConnection.query(
-        "UPDATE employee SET ? WHERE employee.EmpID = ?",
-        [emp, req.params.id],
-        (err, row, fields) => {
-            if (!err)
-                res.send(
-                    "UPDATE Sukses! \n { Request : " + JSON.stringify(req.body) + "\n}"
-                );
-            else console.log(err + "  " + JSON.stringify(req.body));
-        }
-    );
-}); */
 
 function authenticate(username, password) {
     var deferred = Q.defer();
@@ -141,32 +63,6 @@ function authenticate(username, password) {
             }
         }
     );
-
-
-
-
-    /* db.users.findOne({
-        username: username
-    }, function (err, user) {
-        if (err) deferred.reject(err.name + ': ' + err.message);
-
-        if (user && bcrypt.compareSync(password, user.hash)) {
-            // authentication successful
-            deferred.resolve({
-                _id: user._id,
-                username: user.username,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                token: jwt.sign({
-                    sub: user._id
-                }, config.secret)
-            });
-        } else {
-            // authentication failed
-            deferred.resolve();
-        }
-    }); */
-
     return deferred.promise;
 }
 
@@ -187,19 +83,6 @@ function getAll() {
                 console.log(err);
             }
         });
-
-
-    /* db.users.find().toArray(function (err, users) {
-        if (err) deferred.reject(err.name + ': ' + err.message);
-
-        // return users (without hashed passwords)
-        users = _.map(users, function (user) {
-            return _.omit(user, 'hash');
-        });
-
-        deferred.resolve(users);
-    }); */
-
     return deferred.promise;
 }
 
@@ -223,18 +106,6 @@ function getById(_id) {
             }
         }
     );
-
-    /* db.users.findById(_id, function (err, user) {
-        if (err) deferred.reject(err.name + ': ' + err.message);
-
-        if (user) {
-            // return user (without hashed password)
-            deferred.resolve(_.omit(user, 'hash'));
-        } else {
-            // user not found
-            deferred.resolve();
-        }
-    }); */
 
     return deferred.promise;
 }
@@ -263,24 +134,6 @@ function create(userParam) {
             }
         }
     );
-
-
-
-    /* // validation
-    db.users.findOne({
-            username: userParam.username
-        },
-        function (err, user) {
-            if (err) deferred.reject(err.name + ': ' + err.message);
-
-            if (user) {
-                // username already exists
-                deferred.reject('Username "' + userParam.username + '" is already taken');
-            } else {
-                createUser();
-            }
-        });
- */
 
     function createUser() {
         // set user object to userParam without the cleartext password
@@ -311,14 +164,7 @@ function create(userParam) {
             }
         );
 
-        /* 
-                db.users.insert(
-                    user,
-                    function (err, doc) {
-                        if (err) deferred.reject(err.name + ': ' + err.message);
 
-                        deferred.resolve();
-                    }); */
     }
 
     return deferred.promise;
@@ -456,14 +302,6 @@ function _delete(_id) {
         }
     );
 
-    /* db.users.remove({
-            _id: mongo.helper.toObjectID(_id)
-        },
-        function (err) {
-            if (err) deferred.reject(err.name + ': ' + err.message);
-
-            deferred.resolve();
-        }); */
 
     return deferred.promise;
 }
